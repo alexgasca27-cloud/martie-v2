@@ -1,0 +1,15 @@
+{
+  "name": "martie-v2",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Martie 2.0 - Plataforma digital de clientes, pedidos, lealtad y administración.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "wrangler": "^4.68.0"
+  }
+}

@@ -1,13 +1,20 @@
 # Martie 2.0
 
-Plataforma digital de Martie: clientes, pedidos, Martie Club y administración.
+Fundación inicial de la nueva plataforma de Martie.
 
 ## Stack
-- Frontend: PWA mobile-first
-- Backend: Cloudflare Workers
-- Database: Cloudflare D1
-- Files/images: Cloudflare R2
-- Repository: GitHub
+- GitHub: repositorio y control de versiones.
+- Cloudflare Workers: backend y runtime.
+- Cloudflare D1: base de datos (se conectará en la siguiente etapa).
+- Cloudflare R2: archivos e imágenes (se conectará en la siguiente etapa).
+- PWA mobile-first.
 
-## Nota
-Este repositorio corresponde exclusivamente a Martie 2.0.
+## Desarrollo
+- `npm install`
+- `npm run dev`
+
+## Deploy
+- `npm run deploy`
+
+## Regla
+Este repositorio es independiente de la versión anterior de Martie.

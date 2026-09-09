@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --cream: #f7f1e7;
+  --green: #18392f;
+  --coffee: #a66a43;
+  --text: #24342e;
+  --card: #fffdf9;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--cream);
+  color: var(--text);
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+body { min-height: 100vh; }
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: min(100%, 440px);
+  padding: 36px 28px;
+  border-radius: 30px;
+  background: var(--card);
+  box-shadow: 0 18px 50px rgba(24, 57, 47, .10);
+  text-align: center;
+}
+
+.cup {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: var(--green);
+  font-size: 34px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--coffee);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+
+h1 {
+  margin: 0;
+  color: var(--green);
+  font-size: clamp(32px, 9vw, 46px);
+  line-height: 1.02;
+}
+
+.copy {
+  margin: 18px 0 22px;
+  line-height: 1.6;
+}
+
+.status {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #edf2ed;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+}

@@ -1,24 +1,24 @@
-# Martie 2.0 — Reglas del proyecto
+# Martie 2.0 — Reglas no negociables
 
 ## Arquitectura
 - GitHub es el repositorio principal.
 - Cloudflare es la infraestructura.
-- Backend/API en Cloudflare Workers.
-- Base de datos en Cloudflare D1.
-- Archivos e imágenes en Cloudflare R2.
-- El frontend nunca accede directamente a D1.
+- Workers es el backend/API.
+- D1 será la base de datos.
+- R2 será el almacenamiento de archivos e imágenes.
+- El frontend no accede directamente a D1.
 - Las reglas críticas se validan en backend.
 
 ## UX/UI
 - Mobile-first.
-- Respetar la referencia visual aprobada de Martie 2.0.
-- Estética cálida, premium, editorial y amigable.
-- Evitar interfaces SaaS genéricas.
+- Respetar el mockup aprobado de Martie 2.0.
+- Fondo crema, verde oscuro, café/caramelo, tarjetas redondeadas y estética cálida/premium.
+- Evitar UI SaaS genérica.
 
 ## Autenticación
-- Autenticación 100% nativa de Martie.
-- No usar Google, Apple, Facebook, Firebase Auth ni proveedores externos.
+- 100% nativa de Martie.
+- No Google, Apple, Facebook, Firebase Auth ni proveedores externos.
 
 ## Desarrollo
 - No cambiar arquitectura o reglas de negocio sin autorización explícita.
-- No modificar recursos de la versión anterior de Martie.
+- No modificar el Worker o D1 de la versión anterior.
