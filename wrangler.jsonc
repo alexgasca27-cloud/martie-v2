@@ -1,14 +1,23 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "martie-v2",
-  "main": "src/index.ts",
+  "main": "src/bootstrap.ts",
+  "account_id": "6e0b72b5b6337ab29566219eb8dbde4e",
   "compatibility_date": "2026-09-09",
+  "workers_dev": true,
   "assets": {
     "binding": "ASSETS",
     "directory": "./public",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
   },
-  "observability": {
-    "enabled": true
-  }
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "martie-v2-db",
+      "database_id": "98c90160-b203-42b9-afcb-d457888734ba",
+      "migrations_dir": "database/migrations"
+    }
+  ],
+  "observability": {"enabled": true}
 }
