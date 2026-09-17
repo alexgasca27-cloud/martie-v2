@@ -90,6 +90,20 @@ function nextSlot(base = new Date()) {
   return target.toISOString();
 }
 
+function validProduct(b: any) {
+  if (!b || typeof b !== 'object' || Array.isArray(b)) return false;
+  if (typeof b.name !== 'string' || !b.name.trim() || b.name.length > 120) return false;
+  if (typeof b.category !== 'string' || !b.category.trim() || b.category.length > 80) return false;
+  if (typeof b.description !== 'string' || b.description.length > 2000) return false;
+  if (typeof b.price !== 'number' || !Number.isFinite(b.price) || b.price < 0 || b.price > 1000000) return false;
+  if (![0,1].includes(b.available) || !Number.isInteger(b.sort_order) || b.sort_order < 0 || b.sort_order > 99999) return false;
+  if (typeof b.image_url !== 'string' || b.image_url.length > 85000) return false;
+  if (b.image_url && !/^data:image\/(jpeg|png|webp);base64,[a-z0-9+/=]+$/i.test(b.image_url)) {
+    try { const u = new URL(b.image_url); if (u.protocol !== 'https:' || u.username || u.password || b.image_url.length > 2048) return false; } catch { return false; }
+  }
+  return true;
+}
+
 async function handleApi(request: Request, env: Env, url: URL) {
   const path = url.pathname;
   if (path === "/api/health") return json({ ok: true, db: !!env.DB, version: "2.0.0" });
@@ -215,18 +229,26 @@ async function handleApi(request: Request, env: Env, url: URL) {
 
   if (path === "/api/admin/products" && request.method === "POST") {
     const auth = await requireUser(request, env, true); if (auth.response) return auth.response;
-    const b = await body<any>(request); const id = uid();
-    await env.DB.prepare(`INSERT INTO products (id,name,description,category,price,image_url,available,sort_order,created_at) VALUES (?1,?2,?3,?4,?5,?6,1,999,?7)`)
-      .bind(id,String(b.name||"Producto"),String(b.description||""),String(b.category||"Otros"),Number(b.price||0),String(b.image_url||""),now()).run();
+    const input = await request.json<any>().catch(() => null);
+    const b = { description: '', image_url: '', available: 1, sort_order: 100, ...input };
+    if (!validProduct(b)) return bad("Revisa nombre, categoría, precio, disponibilidad y foto del producto");
+    const id = uid();
+    await env.DB.prepare(`INSERT INTO products (id,name,description,category,price,image_url,available,sort_order,created_at) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)`)
+      .bind(id,b.name.trim(),b.description.trim(),b.category.trim(),Math.round(b.price*100)/100,b.image_url,b.available,b.sort_order,now()).run();
     return json({ok:true,id},201);
   }
 
   const productMatch = path.match(/^\/api\/admin\/products\/([^/]+)$/);
   if (productMatch && request.method === "PATCH") {
     const auth = await requireUser(request, env, true); if (auth.response) return auth.response;
-    const b = await body<any>(request);
-    await env.DB.prepare(`UPDATE products SET name=COALESCE(?1,name),description=COALESCE(?2,description),category=COALESCE(?3,category),price=COALESCE(?4,price),image_url=COALESCE(?5,image_url),available=COALESCE(?6,available) WHERE id=?7`)
-      .bind(b.name ?? null,b.description ?? null,b.category ?? null,b.price ?? null,b.image_url ?? null,b.available ?? null,productMatch[1]).run();
+    const input = await request.json<any>().catch(() => null);
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return bad("Producto inválido");
+    const current = await env.DB.prepare("SELECT * FROM products WHERE id=?1").bind(productMatch[1]).first<any>();
+    if (!current) return bad("Producto no encontrado",404);
+    const b = {...current,...input};
+    if (!validProduct(b)) return bad("Revisa nombre, categoría, precio, disponibilidad y foto del producto");
+    await env.DB.prepare(`UPDATE products SET name=?1,description=?2,category=?3,price=?4,image_url=?5,available=?6,sort_order=?7 WHERE id=?8`)
+      .bind(b.name.trim(),b.description.trim(),b.category.trim(),Math.round(b.price*100)/100,b.image_url,b.available,b.sort_order,productMatch[1]).run();
     return json({ok:true});
   }
 
@@ -245,3 +267,5 @@ export default {
     }
   }
 };
+
+
