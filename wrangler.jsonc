@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "martie-v2",
-  "main": "src/index-v2.ts",
+  "main": "src/bootstrap.ts",
   "account_id": "6e0b72b5b6337ab29566219eb8dbde4e",
   "compatibility_date": "2026-09-09",
   "workers_dev": true,
