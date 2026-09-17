@@ -1,48 +1,41 @@
-# Martie 2.0 — Activación en Cloudflare
+# Martie 2.0 — Producción Cloudflare
 
-La aplicación ya incluye frontend, Worker/API, migración D1 y workflow de deploy. Para producción faltan únicamente recursos/credenciales de la cuenta Cloudflare, que no deben guardarse en el repositorio.
+## Recursos exclusivos
+- Worker: `martie-v2`.
+- URL: https://martie-v2.alexgasca27.workers.dev
+- D1: `martie-v2-db`; el identificador está fijado en `wrangler.jsonc`.
+- Binding del Worker: `DB`.
+- Rama de producción en Cloudflare Builds: `build/functional-v1`; referencia de revisión: PR #1.
+- No usar ni modificar `martie` o `martie-db`, que pertenecen a la versión anterior.
 
-## 1. Crear D1
+## Despliegue
+Cloudflare Builds despliega esta rama con `npx wrangler deploy` y el token de builds existente. `wrangler.jsonc` es la configuración compartida y fija el Worker y la D1 exclusivos. Las rutas `/api/*` ejecutan el Worker antes del fallback SPA. Los archivos públicos se sirven mediante `ASSETS`.
 
-En Cloudflare crea una base D1 llamada `martie-v2`. Copia su `database_id`.
+La migración `database/migrations/0001_initial.sql` se aplicó desde la consola de esta D1 el 17 de septiembre de 2026. Se verificaron las seis tablas y los ocho productos iniciales. Esta ejecución manual no crea el registro de migraciones de Wrangler; la primera ejecución con Wrangler volverá a procesarla. La migración inicial utiliza `IF NOT EXISTS` e `INSERT OR IGNORE`.
 
-## 2. GitHub Actions secrets
-
-En Settings → Secrets and variables → Actions agrega:
-
-- `CLOUDFLARE_API_TOKEN`: token con permisos para Workers y D1.
-- `CLOUDFLARE_ACCOUNT_ID`: Account ID de Cloudflare.
-- `CLOUDFLARE_D1_DATABASE_ID`: ID de la D1 `martie-v2`.
-
-El workflow `.github/workflows/deploy.yml` genera una configuración temporal, aplica `database/migrations/0001_initial.sql` y despliega el Worker.
-
-## 3. Primer administrador
-
-Registra primero la cuenta que administrará Martie. Después, desde la consola D1 ejecuta una sola vez:
-
-```sql
-UPDATE users SET role='admin' WHERE email='TU_CORREO';
+Para futuras migraciones, aplicar antes del despliegue:
+```sh
+npx wrangler d1 migrations apply martie-v2-db --remote
+npx wrangler deploy
 ```
+El token que ejecute migraciones necesita permisos D1 en esta cuenta.
 
-Cierra sesión y vuelve a entrar. La interfaz cambiará automáticamente al panel administrativo.
+GitHub Actions queda como alternativa **manual**, para evitar dos despliegues automáticos compitiendo. Requiere el secret `CLOUDFLARE_API_TOKEN` con permisos adecuados; no fue configurado ni probado en esta activación. Usa la misma configuración del repositorio. Ejecutarlo sobre `build/functional-v1`.
 
-## 4. Reglas de negocio implementadas
+## Administrador
+El correo indicado es `CORREO_ADMIN`. El propietario debe registrar su cuenta con su propia contraseña. Una vez exista, ejecutar únicamente sobre `martie-v2-db`:
+```sql
+UPDATE users SET role='admin' WHERE email='CORREO_ADMIN';
+SELECT email, role FROM users WHERE email='CORREO_ADMIN';
+```
+Después debe cerrar sesión y volver a entrar.
 
-- Auth propia de Martie; no Google/Apple/Firebase.
-- Pedidos pickup o delivery.
-- Efectivo, tarjeta únicamente en terminal y transferencia.
-- Transferencia solicita comprobante por WhatsApp.
-- Primer horario: +40 min; siguientes cortes de 15 min.
-- Operación: lunes a viernes, 09:00–19:00.
-- Martie Club: $100 = 10 puntos.
-- Beneficio de cumpleaños documentado con antigüedad mínima de 3 meses.
-- Administración de pedidos y productos mediante API.
-- PWA instalable y shell offline.
+## WhatsApp y catálogo
+Las confirmaciones abren WhatsApp hacia `el número comercial configurado`. La aplicación prepara el mensaje; el cliente debe enviarlo. No hay envío automático ni validación bancaria del comprobante.
+El catálogo conserva los ocho productos y precios de ejemplo de la migración. Confirmar catálogo, precios y fotos antes del lanzamiento comercial.
 
-## 5. Prueba sin D1
+## Verificación y límites
+Se comprobaron salud con D1, lectura del menú, errores JSON, rutas protegidas, recursos de la PWA y registro/inicio de sesión de una cuenta técnica autorizada. No se generaron pedidos reales.
+La instalación en teléfonos y el comportamiento offline deben comprobarse también en los dispositivos objetivo.
 
-Si el Worker detecta que D1 todavía no está vinculado, la interfaz ofrece `Modo demo`. Ese modo permite probar navegación, menú, carrito, checkout, pedidos y puntos utilizando almacenamiento local del dispositivo.
-
-## 6. Pendientes de datos reales
-
-Antes de lanzamiento comercial sustituir el menú seed por precios/productos definitivos, agregar el número real de WhatsApp de Martie y cargar las fotografías reales de productos en R2 o URLs públicas.
+La activación de infraestructura no sustituye la revisión de seguridad y reglas de negocio: el código original usa SHA-256 para contraseñas, interpolación HTML sin escape general, horarios del servidor y puntos al crear pedidos. Estas áreas requieren endurecimiento antes de un lanzamiento comercial amplio.
